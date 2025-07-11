@@ -88,14 +88,14 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 # ✅ User question input
-user_input = st.text_input("❓ Ask your question about STRATA 2K25:")
+user_input = st.text_input("🧑 You:", placeholder="Type your question...")
 
 # ✅ Ask button
-if st.button("Ask Now"):
+if st.button("Send"):
     if not user_input.strip():
         st.warning("⚠️ Please enter a valid question.")
     else:
-        with st.spinner("📖 Reading the brochure..."):
+        with st.spinner("🤖 Bot is thinking..."):
             prompt = f"""
 You are a helpful event assistant for STRATA 2K25.
 
@@ -110,28 +110,38 @@ Question: {user_input}
             try:
                 response = model.generate_content(prompt)
                 answer = response.text.strip()
-                st.session_state.chat_history.append(("🧑 You", user_input))
-                st.session_state.chat_history.append(("🤖 Bot", answer))
-                st.success("✅ Here's the answer:")
-                st.write(answer)
+                st.session_state.chat_history.append(("user", user_input))
+                st.session_state.chat_history.append(("bot", answer))
             except Exception as e:
-                st.error(f"❌ Error: {e}")
+                st.session_state.chat_history.append(("bot", f"❌ Error: {e}"))
 
-# ✅ Display Chat History (ChatGPT-style)
+# ✅ Display chat history in WhatsApp-style UI
 if st.session_state.chat_history:
     st.markdown("---")
-    st.subheader("💬 Conversation")
+    st.subheader("💬 Chat")
 
     for role, msg in st.session_state.chat_history:
-        with st.container():
-            col1, col2 = st.columns([1, 12])
-            with col1:
-                st.markdown(role)
-            with col2:
-                bubble_color = "#fff3e0" if role == "🧑 You" else "#e0f7fa"
-                st.markdown(
-                    f"<div style='text-align: left; background-color: {bubble_color}; "
-                    f"color: black; padding: 10px; border-radius: 10px; margin-bottom: 10px;'>"
-                    f"{msg}</div>",
-                    unsafe_allow_html=True
-                )
+        if role == "user":
+            # Right aligned (user)
+            st.markdown(
+                f"""
+                <div style='display: flex; justify-content: flex-end; margin-bottom: 10px;'>
+                    <div style='background-color: #dcf8c6; padding: 10px 15px; border-radius: 20px; max-width: 80%; color: black;'>
+                        {msg}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        else:
+            # Left aligned (bot)
+            st.markdown(
+                f"""
+                <div style='display: flex; justify-content: flex-start; margin-bottom: 10px;'>
+                    <div style='background-color: #e6e6e6; padding: 10px 15px; border-radius: 20px; max-width: 80%; color: black;'>
+                        {msg}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
