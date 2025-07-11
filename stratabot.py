@@ -7,7 +7,7 @@ from io import BytesIO
 # ✅ Page setup
 st.set_page_config(page_title="🎓 STRATA 2K25 Assistant", layout="wide")
 
-# ✅ Set background with dark overlay
+# ✅ Background style
 def set_background():
     st.markdown("""
         <style>
@@ -28,6 +28,18 @@ def set_background():
         }
         h1, h2, h3, p {
             color: #ffecb3;
+        }
+        .chat-input {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-width: 950px;
+            margin: auto;
+            background-color: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 10px;
         }
         .stTextInput > div > div > input {
             background-color: #ffffff;
@@ -51,10 +63,10 @@ set_background()
 api_key = "AIzaSyBoGkf3vaZuMWmegTLM8lmVpvvoSOFYLYU"
 genai.configure(api_key=api_key)
 
-# ✅ Load Gemini Flash model
+# ✅ Load Gemini model
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-# ✅ Load PDF from a Public URL
+# ✅ Load PDF from URL
 @st.cache_data
 def load_pdf_from_url(pdf_url):
     response = requests.get(pdf_url)
@@ -71,11 +83,11 @@ def load_pdf_from_url(pdf_url):
         st.error("❌ Failed to load PDF from URL.")
         return ""
 
-# ✅ Brochure PDF
+# ✅ Brochure link
 pdf_url = "https://drive.google.com/uc?export=download&id=1mHJGH_LOlfgLZOHCN-wTwsylrPwAboBD"
 brochure_text = load_pdf_from_url(pdf_url)
 
-# ✅ Title and Info
+# ✅ Title
 st.title("🎓 STRATA 2K25 - Event Assistant Chatbot")
 st.markdown("""
 This chatbot helps you explore event details, rules, and participation guidelines for **STRATA 2K25**.
@@ -83,16 +95,44 @@ This chatbot helps you explore event details, rules, and participation guideline
 📘 **இந்த chatbot மூலம் STRATA 2K25-இல் நடைபெறும் நிகழ்ச்சிகள், விதிமுறைகள் மற்றும் விவரங்களை தெரிந்து கொள்ளலாம்.**
 """)
 
-# ✅ Session State Initialization
+# ✅ Chat history setup
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# ✅ Input box + Submit button
-user_input = st.text_input("🧑 You:", placeholder="Type your question and press Enter or click Send")
-send_button = st.button("Send")
+# ✅ Display Chat at the top
+st.markdown("---")
+st.subheader("💬 Chat")
 
-# ✅ Handle on-click logic immediately
-if send_button and user_input.strip():
+for role, msg in st.session_state.chat_history:
+    align = "flex-end" if role == "user" else "flex-start"
+    bg_color = "#dcf8c6" if role == "user" else "#e6e6e6"
+    border_radius = "15px 15px 0px 15px" if role == "user" else "15px 15px 15px 0px"
+
+    st.markdown(
+        f"""
+        <div style='display: flex; justify-content: {align}; margin: 5px 0;'>
+            <div style='background-color: {bg_color}; padding: 10px 15px;
+                        border-radius: {border_radius};
+                        max-width: 80%; color: black; font-size: 16px;'>
+                {msg}
+            </div>
+        </div>
+        """, unsafe_allow_html=True
+    )
+
+# ✅ Chat Input at Bottom
+with st.container():
+    st.markdown("<div class='chat-input'>", unsafe_allow_html=True)
+    with st.form("chat_form", clear_on_submit=True):
+        col1, col2 = st.columns([5, 1])
+        with col1:
+            user_input = st.text_input("🧑 You:", label_visibility="collapsed", placeholder="Type your question...")
+        with col2:
+            send = st.form_submit_button("Send")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# ✅ Handle message
+if send and user_input.strip():
     with st.spinner("🤖 Bot is typing..."):
         prompt = f"""
 You are a helpful event assistant for STRATA 2K25.
@@ -111,36 +151,6 @@ Question: {user_input}
         except Exception as e:
             answer = f"❌ Error: {e}"
 
-    # ✅ Save chat history immediately
+    # ✅ Save history
     st.session_state.chat_history.append(("user", user_input))
     st.session_state.chat_history.append(("bot", answer))
-
-# ✅ Display chat history WhatsApp-style
-st.markdown("---")
-st.subheader("💬 Chat")
-
-for role, msg in st.session_state.chat_history:
-    if role == "user":
-        st.markdown(
-            f"""
-            <div style='display: flex; justify-content: flex-end; margin: 5px 0;'>
-                <div style='background-color: #dcf8c6; padding: 10px 15px;
-                            border-radius: 15px 15px 0px 15px;
-                            max-width: 80%; color: black; font-size: 16px;'>
-                    {msg}
-                </div>
-            </div>
-            """, unsafe_allow_html=True
-        )
-    else:
-        st.markdown(
-            f"""
-            <div style='display: flex; justify-content: flex-start; margin: 5px 0;'>
-                <div style='background-color: #e6e6e6; padding: 10px 15px;
-                            border-radius: 15px 15px 15px 0px;
-                            max-width: 80%; color: black; font-size: 16px;'>
-                    {msg}
-                </div>
-            </div>
-            """, unsafe_allow_html=True
-        )
