@@ -71,9 +71,8 @@ def load_pdf_from_url(pdf_url):
         st.error("❌ Failed to load PDF from URL.")
         return ""
 
-# ✅ Use your actual brochure link here
+# ✅ PDF brochure URL (drive download)
 pdf_url = "https://drive.google.com/uc?export=download&id=1mHJGH_LOlfgLZOHCN-wTwsylrPwAboBD"
-
 brochure_text = load_pdf_from_url(pdf_url)
 
 # ✅ App Title and Info
@@ -118,9 +117,21 @@ Question: {user_input}
             except Exception as e:
                 st.error(f"❌ Error: {e}")
 
-# ✅ Show chat history
+# ✅ Display Chat History (ChatGPT-style)
 if st.session_state.chat_history:
     st.markdown("---")
-    st.subheader("🗨️ Chat History")
+    st.subheader("💬 Conversation")
+
     for role, msg in st.session_state.chat_history:
-        st.markdown(f"**{role}**: {msg}")
+        with st.container():
+            col1, col2 = st.columns([1, 12])
+            with col1:
+                st.markdown(role)
+            with col2:
+                bubble_color = "#fff3e0" if role == "🧑 You" else "#e0f7fa"
+                st.markdown(
+                    f"<div style='text-align: left; background-color: {bubble_color}; "
+                    f"color: black; padding: 10px; border-radius: 10px; margin-bottom: 10px;'>"
+                    f"{msg}</div>",
+                    unsafe_allow_html=True
+                )
