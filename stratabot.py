@@ -71,11 +71,11 @@ def load_pdf_from_url(pdf_url):
         st.error("❌ Failed to load PDF from URL.")
         return ""
 
-# ✅ Brochure URL
+# ✅ Brochure PDF
 pdf_url = "https://drive.google.com/uc?export=download&id=1mHJGH_LOlfgLZOHCN-wTwsylrPwAboBD"
 brochure_text = load_pdf_from_url(pdf_url)
 
-# ✅ App title
+# ✅ Title and Info
 st.title("🎓 STRATA 2K25 - Event Assistant Chatbot")
 st.markdown("""
 This chatbot helps you explore event details, rules, and participation guidelines for **STRATA 2K25**.
@@ -83,51 +83,16 @@ This chatbot helps you explore event details, rules, and participation guideline
 📘 **இந்த chatbot மூலம் STRATA 2K25-இல் நடைபெறும் நிகழ்ச்சிகள், விதிமுறைகள் மற்றும் விவரங்களை தெரிந்து கொள்ளலாம்.**
 """)
 
-# ✅ Initialize session state
+# ✅ Session State Initialization
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-if "user_input" not in st.session_state:
-    st.session_state.user_input = ""
+# ✅ Input box + Submit button
+user_input = st.text_input("🧑 You:", placeholder="Type your question and press Enter or click Send")
+send_button = st.button("Send")
 
-# ✅ WhatsApp-style chat display
-with st.container():
-    st.markdown("---")
-    st.subheader("💬 Chat")
-
-    for role, msg in st.session_state.chat_history:
-        if role == "user":
-            st.markdown(
-                f"""
-                <div style='display: flex; justify-content: flex-end; margin: 5px 0;'>
-                    <div style='background-color: #dcf8c6; padding: 10px 15px;
-                                border-radius: 15px 15px 0px 15px;
-                                max-width: 80%; color: black; font-size: 16px;'>
-                        {msg}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True
-            )
-        else:
-            st.markdown(
-                f"""
-                <div style='display: flex; justify-content: flex-start; margin: 5px 0;'>
-                    <div style='background-color: #e6e6e6; padding: 10px 15px;
-                                border-radius: 15px 15px 15px 0px;
-                                max-width: 80%; color: black; font-size: 16px;'>
-                        {msg}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True
-            )
-
-# ✅ Input area (not fixed to avoid rerun errors)
-with st.form("chat_form", clear_on_submit=True):
-    user_input = st.text_input("🧑 You:", placeholder="Type your question here...")
-    submitted = st.form_submit_button("Send")
-
-# ✅ Handle message
-if submitted and user_input.strip():
+# ✅ Handle on-click logic immediately
+if send_button and user_input.strip():
     with st.spinner("🤖 Bot is typing..."):
         prompt = f"""
 You are a helpful event assistant for STRATA 2K25.
@@ -146,5 +111,36 @@ Question: {user_input}
         except Exception as e:
             answer = f"❌ Error: {e}"
 
+    # ✅ Save chat history immediately
     st.session_state.chat_history.append(("user", user_input))
     st.session_state.chat_history.append(("bot", answer))
+
+# ✅ Display chat history WhatsApp-style
+st.markdown("---")
+st.subheader("💬 Chat")
+
+for role, msg in st.session_state.chat_history:
+    if role == "user":
+        st.markdown(
+            f"""
+            <div style='display: flex; justify-content: flex-end; margin: 5px 0;'>
+                <div style='background-color: #dcf8c6; padding: 10px 15px;
+                            border-radius: 15px 15px 0px 15px;
+                            max-width: 80%; color: black; font-size: 16px;'>
+                    {msg}
+                </div>
+            </div>
+            """, unsafe_allow_html=True
+        )
+    else:
+        st.markdown(
+            f"""
+            <div style='display: flex; justify-content: flex-start; margin: 5px 0;'>
+                <div style='background-color: #e6e6e6; padding: 10px 15px;
+                            border-radius: 15px 15px 15px 0px;
+                            max-width: 80%; color: black; font-size: 16px;'>
+                    {msg}
+                </div>
+            </div>
+            """, unsafe_allow_html=True
+        )
