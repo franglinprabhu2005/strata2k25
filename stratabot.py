@@ -5,10 +5,10 @@ import requests
 from io import BytesIO
 import time
 
-# ✅ Setup
+# ✅ Page setup
 st.set_page_config(page_title="🎓 STRATA 2K25 Assistant", layout="wide")
 
-# ✅ Background
+# ✅ Set background style
 def set_background():
     st.markdown("""
         <style>
@@ -35,12 +35,12 @@ def set_background():
 
 set_background()
 
-# ✅ Gemini API setup
+# ✅ Gemini API Key
 api_key = "AIzaSyBoGkf3vaZuMWmegTLM8lmVpvvoSOFYLYU"
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-# ✅ PDF loader
+# ✅ Load brochure from PDF URL
 @st.cache_data
 def load_pdf_from_url(url):
     res = requests.get(url)
@@ -52,7 +52,7 @@ def load_pdf_from_url(url):
 pdf_url = "https://drive.google.com/uc?export=download&id=1mHJGH_LOlfgLZOHCN-wTwsylrPwAboBD"
 brochure_text = load_pdf_from_url(pdf_url)
 
-# ✅ State init
+# ✅ Session State Setup
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
@@ -62,14 +62,15 @@ if "last_click_time" not in st.session_state:
 if "question" not in st.session_state:
     st.session_state.question = ""
 
-# ✅ Title
+# ✅ App Title
 st.title("🎓 STRATA 2K25 - Event Assistant Chatbot")
 st.markdown("""
 This chatbot helps you explore event details, rules, and participation guidelines for **STRATA 2K25**.
+
 📘 **இந்த chatbot மூலம் STRATA 2K25 நிகழ்ச்சிகள், விதிமுறைகள் மற்றும் விவரங்களை தெரிந்து கொள்ளலாம்.**
 """)
 
-# ✅ Show chat
+# ✅ Show chat history
 st.markdown("---")
 st.subheader("💬 Chat")
 for role, msg in st.session_state.chat_history:
@@ -86,7 +87,7 @@ for role, msg in st.session_state.chat_history:
     </div>
     """, unsafe_allow_html=True)
 
-# ✅ Input box fixed bottom
+# ✅ Input box fixed at bottom
 st.markdown("""
 <div style='position: fixed; bottom: 20px; left: 0; right: 0; width: 100%; max-width: 950px; margin: auto;
             background-color: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 10px; z-index: 9999;'>
@@ -95,19 +96,20 @@ st.markdown("""
 col1, col2 = st.columns([5, 1])
 with col1:
     st.text_input("🧑 You:", key="question", label_visibility="collapsed", placeholder="Type your question...")
+
 with col2:
     clicked = st.button("Send")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# ✅ Handle click
+# ✅ On Send Button Click
 if clicked and st.session_state.question.strip():
     now = time.time()
     if now - st.session_state.last_click_time < 1:
         st.warning("🚫 Please click only once bro!")
     else:
         st.session_state.last_click_time = now
-        question = st.session_state.question.strip()
+        user_q = st.session_state.question.strip()
 
         with st.spinner("🕒 Your question is processing..."):
             prompt = f"""
@@ -119,7 +121,7 @@ Refer to the following brochure content and answer the question clearly:
 {brochure_text}
 --- Brochure Content End ---
 
-Question: {question}
+Question: {user_q}
 """
             try:
                 result = model.generate_content(prompt)
@@ -127,6 +129,10 @@ Question: {question}
             except Exception as e:
                 answer = f"❌ Error: {e}"
 
-        st.session_state.chat_history.append(("user", question))
+        # ✅ Save to history
+        st.session_state.chat_history.append(("user", user_q))
         st.session_state.chat_history.append(("bot", answer))
-        st.session_state.question = ""  # clear after submit
+
+        # ✅ Clear the input properly
+        del st.session_state["question"]
+        st.experimental_rerun()
