@@ -72,7 +72,8 @@ def load_pdf_from_url(pdf_url):
         return ""
 
 # ✅ Google Drive Direct Download Link (replace FILE_ID if needed)
-pdf_url = "https://drive.google.com/uc?export=download&id=16odYOFpDZ_6ZzepN-ezO_cS_eElFbk0_"
+pdf_url = "https://drive.google.com/uc?export=download&id=1mHJGH_LOlfgLZOHCN-wTwsylrPwAboBD
+"
 
 brochure_text = load_pdf_from_url(pdf_url)
 
