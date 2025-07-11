@@ -7,7 +7,7 @@ from io import BytesIO
 # ✅ Page setup
 st.set_page_config(page_title="🎓 STRATA 2K25 Assistant", layout="wide")
 
-# ✅ Background style
+# ✅ Background and custom style
 def set_background():
     st.markdown("""
         <style>
@@ -28,18 +28,6 @@ def set_background():
         }
         h1, h2, h3, p {
             color: #ffecb3;
-        }
-        .chat-input {
-            position: fixed;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            width: 100%;
-            max-width: 950px;
-            margin: auto;
-            background-color: rgba(255,255,255,0.1);
-            padding: 10px 20px;
-            border-radius: 10px;
         }
         .stTextInput > div > div > input {
             background-color: #ffffff;
@@ -63,10 +51,10 @@ set_background()
 api_key = "AIzaSyBoGkf3vaZuMWmegTLM8lmVpvvoSOFYLYU"
 genai.configure(api_key=api_key)
 
-# ✅ Load Gemini model
+# ✅ Load Gemini Flash model
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-# ✅ Load PDF from URL
+# ✅ Load PDF content from Google Drive
 @st.cache_data
 def load_pdf_from_url(pdf_url):
     response = requests.get(pdf_url)
@@ -83,11 +71,11 @@ def load_pdf_from_url(pdf_url):
         st.error("❌ Failed to load PDF from URL.")
         return ""
 
-# ✅ Brochure link
+# ✅ Brochure PDF link
 pdf_url = "https://drive.google.com/uc?export=download&id=1mHJGH_LOlfgLZOHCN-wTwsylrPwAboBD"
 brochure_text = load_pdf_from_url(pdf_url)
 
-# ✅ Title
+# ✅ App Title
 st.title("🎓 STRATA 2K25 - Event Assistant Chatbot")
 st.markdown("""
 This chatbot helps you explore event details, rules, and participation guidelines for **STRATA 2K25**.
@@ -95,11 +83,11 @@ This chatbot helps you explore event details, rules, and participation guideline
 📘 **இந்த chatbot மூலம் STRATA 2K25-இல் நடைபெறும் நிகழ்ச்சிகள், விதிமுறைகள் மற்றும் விவரங்களை தெரிந்து கொள்ளலாம்.**
 """)
 
-# ✅ Chat history setup
+# ✅ Chat History
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# ✅ Display Chat at the top
+# ✅ Display Chat
 st.markdown("---")
 st.subheader("💬 Chat")
 
@@ -120,19 +108,22 @@ for role, msg in st.session_state.chat_history:
         """, unsafe_allow_html=True
     )
 
-# ✅ Chat Input at Bottom
-with st.container():
-    st.markdown("<div class='chat-input'>", unsafe_allow_html=True)
-    with st.form("chat_form", clear_on_submit=True):
-        col1, col2 = st.columns([5, 1])
-        with col1:
-            user_input = st.text_input("🧑 You:", label_visibility="collapsed", placeholder="Type your question...")
-        with col2:
-            send = st.form_submit_button("Send")
-    st.markdown("</div>", unsafe_allow_html=True)
+# ✅ Fixed Input Box and Button at Bottom
+st.markdown("""
+    <div style='position: fixed; bottom: 20px; left: 0; right: 0; width: 100%; max-width: 950px; margin: auto;
+                background-color: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 10px; z-index: 9999;'>
+""", unsafe_allow_html=True)
 
-# ✅ Handle message
-if send and user_input.strip():
+col1, col2 = st.columns([5, 1])
+with col1:
+    user_input = st.text_input("🧑 You:", placeholder="Type your question...", label_visibility="collapsed")
+with col2:
+    send_button = st.button("Send")
+
+st.markdown("</div>", unsafe_allow_html=True)
+
+# ✅ Process Input
+if send_button and user_input.strip():
     with st.spinner("🤖 Bot is typing..."):
         prompt = f"""
 You are a helpful event assistant for STRATA 2K25.
@@ -151,6 +142,6 @@ Question: {user_input}
         except Exception as e:
             answer = f"❌ Error: {e}"
 
-    # ✅ Save history
+    # ✅ Save chat
     st.session_state.chat_history.append(("user", user_input))
     st.session_state.chat_history.append(("bot", answer))
