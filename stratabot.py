@@ -40,7 +40,7 @@ api_key = "AIzaSyBoGkf3vaZuMWmegTLM8lmVpvvoSOFYLYU"
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-# ✅ Load brochure from PDF URL
+# ✅ Load brochure PDF from URL
 @st.cache_data
 def load_pdf_from_url(url):
     res = requests.get(url)
@@ -52,7 +52,7 @@ def load_pdf_from_url(url):
 pdf_url = "https://drive.google.com/uc?export=download&id=1mHJGH_LOlfgLZOHCN-wTwsylrPwAboBD"
 brochure_text = load_pdf_from_url(pdf_url)
 
-# ✅ Session State Setup
+# ✅ Session state setup
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
@@ -62,7 +62,7 @@ if "last_click_time" not in st.session_state:
 if "question" not in st.session_state:
     st.session_state.question = ""
 
-# ✅ App Title
+# ✅ App title
 st.title("🎓 STRATA 2K25 - Event Assistant Chatbot")
 st.markdown("""
 This chatbot helps you explore event details, rules, and participation guidelines for **STRATA 2K25**.
@@ -87,7 +87,7 @@ for role, msg in st.session_state.chat_history:
     </div>
     """, unsafe_allow_html=True)
 
-# ✅ Input box fixed at bottom
+# ✅ Fixed input box at bottom
 st.markdown("""
 <div style='position: fixed; bottom: 20px; left: 0; right: 0; width: 100%; max-width: 950px; margin: auto;
             background-color: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 10px; z-index: 9999;'>
@@ -102,7 +102,7 @@ with col2:
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# ✅ On Send Button Click
+# ✅ Handle click
 if clicked and st.session_state.question.strip():
     now = time.time()
     if now - st.session_state.last_click_time < 1:
@@ -129,10 +129,9 @@ Question: {user_q}
             except Exception as e:
                 answer = f"❌ Error: {e}"
 
-        # ✅ Save to history
+        # ✅ Save chat
         st.session_state.chat_history.append(("user", user_q))
         st.session_state.chat_history.append(("bot", answer))
 
-        # ✅ Clear the input properly
-        del st.session_state["question"]
-        st.experimental_rerun()
+        # ✅ Clear input safely
+        st.session_state.question = ""
