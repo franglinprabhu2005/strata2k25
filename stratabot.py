@@ -3,6 +3,7 @@ import google.generativeai as genai
 from PyPDF2 import PdfReader
 import requests
 from io import BytesIO
+import time  # For double-click detection
 
 # ✅ Page setup
 st.set_page_config(page_title="🎓 STRATA 2K25 Assistant", layout="wide")
@@ -87,6 +88,10 @@ This chatbot helps you explore event details, rules, and participation guideline
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
+# ✅ Track last click time
+if "last_click_time" not in st.session_state:
+    st.session_state.last_click_time = 0
+
 # ✅ Display Chat
 st.markdown("---")
 st.subheader("💬 Chat")
@@ -122,10 +127,18 @@ with col2:
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# ✅ Process Input
+# ✅ Handle Input + Double Click Check
 if send_button and user_input.strip():
-    with st.spinner("🤖 Bot is typing..."):
-        prompt = f"""
+    current_time = time.time()
+    time_diff = current_time - st.session_state.last_click_time
+
+    if time_diff < 1.0:
+        st.warning("🚫 Please click only once bro! Double click not needed 😅")
+    else:
+        st.session_state.last_click_time = current_time
+
+        with st.spinner("🤖 Bot is typing..."):
+            prompt = f"""
 You are a helpful event assistant for STRATA 2K25.
 
 Refer to the following brochure content and answer the question clearly:
@@ -136,12 +149,12 @@ Refer to the following brochure content and answer the question clearly:
 
 Question: {user_input}
 """
-        try:
-            response = model.generate_content(prompt)
-            answer = response.text.strip()
-        except Exception as e:
-            answer = f"❌ Error: {e}"
+            try:
+                response = model.generate_content(prompt)
+                answer = response.text.strip()
+            except Exception as e:
+                answer = f"❌ Error: {e}"
 
-    # ✅ Save chat
-    st.session_state.chat_history.append(("user", user_input))
-    st.session_state.chat_history.append(("bot", answer))
+        # ✅ Save chat
+        st.session_state.chat_history.append(("user", user_input))
+        st.session_state.chat_history.append(("bot", answer))
