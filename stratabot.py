@@ -55,7 +55,7 @@ genai.configure(api_key=api_key)
 # ✅ Load Gemini model
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-# ✅ Load brochure from Drive
+# ✅ Load brochure
 @st.cache_data
 def load_pdf_from_url(pdf_url):
     response = requests.get(pdf_url)
@@ -72,11 +72,10 @@ def load_pdf_from_url(pdf_url):
         st.error("❌ Failed to load PDF from URL.")
         return ""
 
-# ✅ Load PDF text
 pdf_url = "https://drive.google.com/uc?export=download&id=1mHJGH_LOlfgLZOHCN-wTwsylrPwAboBD"
 brochure_text = load_pdf_from_url(pdf_url)
 
-# ✅ Title
+# ✅ App title
 st.title("🎓 STRATA 2K25 - Event Assistant Chatbot")
 st.markdown("""
 This chatbot helps you explore event details, rules, and participation guidelines for **STRATA 2K25**.
@@ -84,14 +83,17 @@ This chatbot helps you explore event details, rules, and participation guideline
 📘 **இந்த chatbot மூலம் STRATA 2K25-இல் நடைபெறும் நிகழ்ச்சிகள், விதிமுறைகள் மற்றும் விவரங்களை தெரிந்து கொள்ளலாம்.**
 """)
 
-# ✅ State setup
+# ✅ State init
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 if "last_click_time" not in st.session_state:
     st.session_state.last_click_time = 0
 
-# ✅ Display chat history
+if "processing_mode" not in st.session_state:
+    st.session_state.processing_mode = False
+
+# ✅ Chat history display
 st.markdown("---")
 st.subheader("💬 Chat")
 
@@ -112,7 +114,7 @@ for role, msg in st.session_state.chat_history:
         """, unsafe_allow_html=True
     )
 
-# ✅ Fixed bottom input
+# ✅ Input fixed bottom
 st.markdown("""
     <div style='position: fixed; bottom: 20px; left: 0; right: 0; width: 100%; max-width: 950px; margin: auto;
                 background-color: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 10px; z-index: 9999;'>
@@ -121,20 +123,21 @@ st.markdown("""
 col1, col2 = st.columns([5, 1])
 with col1:
     user_input = st.text_input("🧑 You:", placeholder="Type your question...", label_visibility="collapsed")
+
 with col2:
-    send_button = st.button("Send")
+    btn_label = "🕒 Processing..." if st.session_state.processing_mode else "Send"
+    send_button = st.button(btn_label)
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# ✅ Handle input
+# ✅ Handle click + processing mode
 if send_button and user_input.strip():
     current_time = time.time()
-    time_diff = current_time - st.session_state.last_click_time
-
-    if time_diff < 1.0:
+    if current_time - st.session_state.last_click_time < 1:
         st.warning("🚫 Please click only once bro! Double click not needed 😅")
     else:
         st.session_state.last_click_time = current_time
+        st.session_state.processing_mode = True
 
         with st.spinner("🕒 Processing your question..."):
             prompt = f"""
@@ -154,6 +157,7 @@ Question: {user_input}
             except Exception as e:
                 answer = f"❌ Error: {e}"
 
-        # ✅ Save chat
+        # ✅ Add to chat + reset button
         st.session_state.chat_history.append(("user", user_input))
         st.session_state.chat_history.append(("bot", answer))
+        st.session_state.processing_mode = False
