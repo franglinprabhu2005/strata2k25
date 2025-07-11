@@ -70,10 +70,9 @@ def load_pdf_from_url(pdf_url):
     else:
         st.error("❌ Failed to load PDF from URL.")
         return ""
-pdf_url = "https://drive.google.com/uc?export=download&id=11Y6cwo1sH9AJHT3y5IOL0J6HC8ZPHift"
 
-# ✅ Google Drive Direct Download Link (replace FILE_ID if needed)
-
+# ✅ Use your actual brochure link here
+pdf_url = "https://drive.google.com/uc?export=download&id=1mHJGH_LOlfgLZOHCN-wTwsylrPwAboBD"
 
 brochure_text = load_pdf_from_url(pdf_url)
 
@@ -104,7 +103,7 @@ You are a helpful event assistant for STRATA 2K25.
 Refer to the following brochure content and answer the question clearly:
 
 --- Brochure Content Start ---
-{brochure_text[:3000]}
+{brochure_text}
 --- Brochure Content End ---
 
 Question: {user_input}
