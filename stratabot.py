@@ -8,7 +8,7 @@ import time
 # ✅ Page setup
 st.set_page_config(page_title="🎓 STRATA 2K25 Assistant", layout="wide")
 
-# ✅ Set background style
+# ✅ Background
 def set_background():
     st.markdown("""
         <style>
@@ -35,12 +35,12 @@ def set_background():
 
 set_background()
 
-# ✅ Gemini API Key
+# ✅ Gemini setup
 api_key = "AIzaSyBoGkf3vaZuMWmegTLM8lmVpvvoSOFYLYU"
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-# ✅ Load brochure PDF from URL
+# ✅ Load brochure from Google Drive
 @st.cache_data
 def load_pdf_from_url(url):
     res = requests.get(url)
@@ -52,13 +52,11 @@ def load_pdf_from_url(url):
 pdf_url = "https://drive.google.com/uc?export=download&id=1mHJGH_LOlfgLZOHCN-wTwsylrPwAboBD"
 brochure_text = load_pdf_from_url(pdf_url)
 
-# ✅ Session state setup
+# ✅ Session state init
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-
 if "last_click_time" not in st.session_state:
     st.session_state.last_click_time = 0
-
 if "question" not in st.session_state:
     st.session_state.question = ""
 
@@ -70,7 +68,7 @@ This chatbot helps you explore event details, rules, and participation guideline
 📘 **இந்த chatbot மூலம் STRATA 2K25 நிகழ்ச்சிகள், விதிமுறைகள் மற்றும் விவரங்களை தெரிந்து கொள்ளலாம்.**
 """)
 
-# ✅ Show chat history
+# ✅ Display chat history
 st.markdown("---")
 st.subheader("💬 Chat")
 for role, msg in st.session_state.chat_history:
@@ -87,7 +85,7 @@ for role, msg in st.session_state.chat_history:
     </div>
     """, unsafe_allow_html=True)
 
-# ✅ Fixed input box at bottom
+# ✅ Input box fixed bottom
 st.markdown("""
 <div style='position: fixed; bottom: 20px; left: 0; right: 0; width: 100%; max-width: 950px; margin: auto;
             background-color: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 10px; z-index: 9999;'>
@@ -109,7 +107,9 @@ if clicked and st.session_state.question.strip():
         st.warning("🚫 Please click only once bro!")
     else:
         st.session_state.last_click_time = now
-        user_q = st.session_state.question.strip()
+
+        # ✅ Safely pop the input
+        user_q = st.session_state.pop("question")
 
         with st.spinner("🕒 Your question is processing..."):
             prompt = f"""
@@ -132,6 +132,3 @@ Question: {user_q}
         # ✅ Save chat
         st.session_state.chat_history.append(("user", user_q))
         st.session_state.chat_history.append(("bot", answer))
-
-        # ✅ Clear input safely
-        st.session_state.question = ""
