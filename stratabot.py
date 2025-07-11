@@ -71,11 +71,11 @@ def load_pdf_from_url(pdf_url):
         st.error("❌ Failed to load PDF from URL.")
         return ""
 
-# ✅ PDF brochure URL (Drive direct download link)
+# ✅ Brochure URL
 pdf_url = "https://drive.google.com/uc?export=download&id=1mHJGH_LOlfgLZOHCN-wTwsylrPwAboBD"
 brochure_text = load_pdf_from_url(pdf_url)
 
-# ✅ App title and description
+# ✅ App title
 st.title("🎓 STRATA 2K25 - Event Assistant Chatbot")
 st.markdown("""
 This chatbot helps you explore event details, rules, and participation guidelines for **STRATA 2K25**.
@@ -83,19 +83,20 @@ This chatbot helps you explore event details, rules, and participation guideline
 📘 **இந்த chatbot மூலம் STRATA 2K25-இல் நடைபெறும் நிகழ்ச்சிகள், விதிமுறைகள் மற்றும் விவரங்களை தெரிந்து கொள்ளலாம்.**
 """)
 
-# ✅ Chat history storage
+# ✅ Initialize session state
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# ✅ Chat display (WhatsApp style)
-chat_placeholder = st.container()
-with chat_placeholder:
+if "user_input" not in st.session_state:
+    st.session_state.user_input = ""
+
+# ✅ WhatsApp-style chat display
+with st.container():
     st.markdown("---")
     st.subheader("💬 Chat")
 
     for role, msg in st.session_state.chat_history:
         if role == "user":
-            # Right aligned
             st.markdown(
                 f"""
                 <div style='display: flex; justify-content: flex-end; margin: 5px 0;'>
@@ -108,7 +109,6 @@ with chat_placeholder:
                 """, unsafe_allow_html=True
             )
         else:
-            # Left aligned
             st.markdown(
                 f"""
                 <div style='display: flex; justify-content: flex-start; margin: 5px 0;'>
@@ -121,20 +121,15 @@ with chat_placeholder:
                 """, unsafe_allow_html=True
             )
 
-# ✅ Fixed input at bottom
-st.markdown("---")
-st.markdown("<div style='position: fixed; bottom: 20px; left: 0; right: 0; width: 100%; max-width: 950px; margin: auto;'>", unsafe_allow_html=True)
-user_input = st.text_input("🧑 You:", placeholder="Type your question here...", key="user_question")
-send_button = st.button("Send")
-st.markdown("</div>", unsafe_allow_html=True)
+# ✅ Input area (not fixed to avoid rerun errors)
+with st.form("chat_form", clear_on_submit=True):
+    user_input = st.text_input("🧑 You:", placeholder="Type your question here...")
+    submitted = st.form_submit_button("Send")
 
-# ✅ Send and get response
-if send_button:
-    if not user_input.strip():
-        st.warning("⚠️ Please enter a valid question.")
-    else:
-        with st.spinner("🤖 Bot is typing..."):
-            prompt = f"""
+# ✅ Handle message
+if submitted and user_input.strip():
+    with st.spinner("🤖 Bot is typing..."):
+        prompt = f"""
 You are a helpful event assistant for STRATA 2K25.
 
 Refer to the following brochure content and answer the question clearly:
@@ -145,12 +140,11 @@ Refer to the following brochure content and answer the question clearly:
 
 Question: {user_input}
 """
-            try:
-                response = model.generate_content(prompt)
-                answer = response.text.strip()
-                st.session_state.chat_history.append(("user", user_input))
-                st.session_state.chat_history.append(("bot", answer))
-                st.experimental_rerun()
-            except Exception as e:
-                st.session_state.chat_history.append(("bot", f"❌ Error: {e}"))
-                st.experimental_rerun()
+        try:
+            response = model.generate_content(prompt)
+            answer = response.text.strip()
+        except Exception as e:
+            answer = f"❌ Error: {e}"
+
+    st.session_state.chat_history.append(("user", user_input))
+    st.session_state.chat_history.append(("bot", answer))
