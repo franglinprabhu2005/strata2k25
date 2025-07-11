@@ -70,10 +70,10 @@ def load_pdf_from_url(pdf_url):
     else:
         st.error("❌ Failed to load PDF from URL.")
         return ""
+pdf_url = "https://drive.google.com/uc?export=download&id=1mHJGH_LOlfgLZOHCN-wTwsylrPwAboBD"
 
 # ✅ Google Drive Direct Download Link (replace FILE_ID if needed)
-pdf_url = "https://drive.google.com/uc?export=download&id=1mHJGH_LOlfgLZOHCN-wTwsylrPwAboBD
-"
+
 
 brochure_text = load_pdf_from_url(pdf_url)
 
