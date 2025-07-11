@@ -3,12 +3,12 @@ import google.generativeai as genai
 from PyPDF2 import PdfReader
 import requests
 from io import BytesIO
-import time  # For double-click detection
+import time
 
 # ✅ Page setup
 st.set_page_config(page_title="🎓 STRATA 2K25 Assistant", layout="wide")
 
-# ✅ Background and custom style
+# ✅ Background style
 def set_background():
     st.markdown("""
         <style>
@@ -52,10 +52,10 @@ set_background()
 api_key = "AIzaSyBoGkf3vaZuMWmegTLM8lmVpvvoSOFYLYU"
 genai.configure(api_key=api_key)
 
-# ✅ Load Gemini Flash model
+# ✅ Load Gemini model
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-# ✅ Load PDF content from Google Drive
+# ✅ Load brochure from Drive
 @st.cache_data
 def load_pdf_from_url(pdf_url):
     response = requests.get(pdf_url)
@@ -72,11 +72,11 @@ def load_pdf_from_url(pdf_url):
         st.error("❌ Failed to load PDF from URL.")
         return ""
 
-# ✅ Brochure PDF link
+# ✅ Load PDF text
 pdf_url = "https://drive.google.com/uc?export=download&id=1mHJGH_LOlfgLZOHCN-wTwsylrPwAboBD"
 brochure_text = load_pdf_from_url(pdf_url)
 
-# ✅ App Title
+# ✅ Title
 st.title("🎓 STRATA 2K25 - Event Assistant Chatbot")
 st.markdown("""
 This chatbot helps you explore event details, rules, and participation guidelines for **STRATA 2K25**.
@@ -84,15 +84,14 @@ This chatbot helps you explore event details, rules, and participation guideline
 📘 **இந்த chatbot மூலம் STRATA 2K25-இல் நடைபெறும் நிகழ்ச்சிகள், விதிமுறைகள் மற்றும் விவரங்களை தெரிந்து கொள்ளலாம்.**
 """)
 
-# ✅ Chat History
+# ✅ State setup
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# ✅ Track last click time
 if "last_click_time" not in st.session_state:
     st.session_state.last_click_time = 0
 
-# ✅ Display Chat
+# ✅ Display chat history
 st.markdown("---")
 st.subheader("💬 Chat")
 
@@ -113,7 +112,7 @@ for role, msg in st.session_state.chat_history:
         """, unsafe_allow_html=True
     )
 
-# ✅ Fixed Input Box and Button at Bottom
+# ✅ Fixed bottom input
 st.markdown("""
     <div style='position: fixed; bottom: 20px; left: 0; right: 0; width: 100%; max-width: 950px; margin: auto;
                 background-color: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 10px; z-index: 9999;'>
@@ -127,7 +126,7 @@ with col2:
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# ✅ Handle Input + Double Click Check
+# ✅ Handle input
 if send_button and user_input.strip():
     current_time = time.time()
     time_diff = current_time - st.session_state.last_click_time
@@ -137,7 +136,7 @@ if send_button and user_input.strip():
     else:
         st.session_state.last_click_time = current_time
 
-        with st.spinner("🤖 Bot is typing..."):
+        with st.spinner("🕒 Processing your question..."):
             prompt = f"""
 You are a helpful event assistant for STRATA 2K25.
 
