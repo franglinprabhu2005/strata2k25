@@ -49,7 +49,7 @@ def load_pdf_from_url(url):
         return "\n".join(page.extract_text() for page in reader.pages if page.extract_text())
     return "❌ Failed to load PDF."
 
-pdf_url = "https://drive.google.com/uc?export=download&id=1mHJGH_LOlfgLZOHCN-wTwsylrPwAboBD"
+pdf_url = "https://drive.google.com/uc?export=download&id=1U0_7_PUtSl7ALVMNmO-2NQLCFT1-0ggv"
 
 brochure_text = load_pdf_from_url(pdf_url)
 
